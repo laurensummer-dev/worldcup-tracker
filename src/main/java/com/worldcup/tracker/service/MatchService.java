@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MatchService {
@@ -76,7 +77,11 @@ public class MatchService {
     }
 
     public boolean isLocked(Match match){
-        return !match.getKickOffTime().isAfter(LocalDateTime.now().plusHours(1));
+        Optional<LocalDateTime> firstKickOff = getFirstKickOffTime();
+        if (firstKickOff.isEmpty()) {
+            return false;
+        }
+        return !firstKickOff.get().isAfter(LocalDateTime.now().plusHours(1));
     }
 
     public List<Match> getUnscoredCompletedMatches(){
@@ -97,5 +102,13 @@ public class MatchService {
 
         predictionRepository.deleteByMatch(match);
         matchRepository.deleteById(id);
+    }
+
+    public Optional<LocalDateTime> getFirstKickOffTime() {
+        List<Match> matches = matchRepository.findAllByOrderByKickOffTimeAsc();
+        if (matches.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(matches.get(0).getKickOffTime());
     }
 }

@@ -9,6 +9,37 @@
             <h1>Matches</h1>
         </div>
 
+        <!-- Tournament lock countdown banner -->
+        <div th:if="${!#lists.isEmpty(matches)}">
+
+            <!-- Already locked -->
+            <div th:if="${matchService.isLocked(matches[0])}"
+                 class="alert alert-warning mb-4">
+                Predictions are now locked — the tournament has begun!
+            </div>
+
+            <!-- Countdown to lock -->
+            <div th:unless="${matchService.isLocked(matches[0])}"
+                 class="alert alert-info mb-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        Predictions lock 1 hour before
+                        <strong th:text="${matches[0].homeTeam}">Team</strong>
+                        vs
+                        <strong th:text="${matches[0].awayTeam}">Team</strong>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted small">Locks in:</span><br/>
+                        <span id="countdown"
+                              class="fw-bold fs-5 text-danger">
+                            Calculating...
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
         <!-- No matches yet -->
         <div th:if="${#lists.isEmpty(matches)}"
              class="alert alert-info">
@@ -47,7 +78,8 @@
 
                         <!-- Kick off time -->
                         <p class="card-text text-muted">
-                            <small th:text="${#temporals.format(match.kickOffTime, 'EEE d MMM yyyy, HH:mm')}">
+                            <small th:text="${#temporals.format(match.kickOffTime,
+                                'EEE d MMM yyyy, HH:mm')}">
                                 Date
                             </small>
                         </p>
@@ -61,7 +93,8 @@
                         </p>
 
                         <!-- Lock warning -->
-                        <p th:if="${matchService.isLocked(match) and match.status == 'SCHEDULED'}"
+                        <p th:if="${matchService.isLocked(match)
+                            and match.status == 'SCHEDULED'}"
                            class="card-text text-warning small">
                             ⚠ Predictions are locked
                         </p>
@@ -77,6 +110,52 @@
             </div>
 
         </div>
+
+        <!-- Countdown script -->
+        <script th:if="${!#lists.isEmpty(matches) and
+                        !matchService.isLocked(matches[0])}"
+                th:inline="javascript">
+            const kickOffTime = /*[[${#temporals.format(matches[0].kickOffTime,
+                'yyyy-MM-dd''T''HH:mm:ss')}]]*/ '2026-01-01T00:00:00';
+
+            function updateCountdown() {
+                const kickOff = new Date(kickOffTime);
+                const lockTime = new Date(
+                    kickOff.getTime() - 60 * 60 * 1000);
+                const now = new Date();
+                const diff = lockTime - now;
+
+                if (diff <= 0) {
+                    document.getElementById('countdown').textContent
+                        = 'Predictions locked!';
+                    clearInterval(timer);
+                    return;
+                }
+
+                const days = Math.floor(
+                    diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor(
+                    (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor(
+                    (diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor(
+                    (diff % (1000 * 60)) / 1000);
+
+                let display = '';
+                if (days > 0) display += days + 'd ';
+                if (hours > 0 || days > 0) display += hours + 'h ';
+                if (minutes > 0 || hours > 0 || days > 0)
+                    display += minutes + 'm ';
+                display += seconds + 's';
+
+                document.getElementById('countdown').textContent
+                    = display;
+            }
+
+            updateCountdown();
+            const timer = setInterval(updateCountdown, 1000);
+        </script>
+
     </div>
 </div>
 </body>
