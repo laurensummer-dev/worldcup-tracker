@@ -1,0 +1,79 @@
+package com.worldcup.tracker.controller;
+
+import com.worldcup.tracker.model.Match;
+import com.worldcup.tracker.repository.UserRepository;
+import com.worldcup.tracker.service.MatchService;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.method.P;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.time.LocalDateTime;
+
+@Controller
+@RequestMapping("/admin")
+public class AdminController {
+    
+    private final UserRepository userRepository;
+    private final MatchService matchService;
+
+    AdminController(UserRepository userRepository, MatchService matchService){
+        this.userRepository = userRepository;
+        this.matchService = matchService;
+    }
+
+    @GetMapping
+    public String dashboard(Model model){
+        model.addAttribute("matches", matchService.getAllMatches());
+        return "admin/dashboard";
+    }
+
+    @GetMapping("/matches/create")
+    public String createMatchForm(){
+        return "admin/matches/create";
+    }
+
+    @PostMapping("/matches/create")
+    public String createMatch(
+            @RequestParam String homeTeam,
+            @RequestParam String awayTeam,
+            @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime kickOffTime) {
+
+        matchService.createMatch(homeTeam, awayTeam, kickOffTime);
+        return "redirect:/admin?success=created";
+    }
+
+    @GetMapping("/matches/{id}/edit")
+    public String editMatchForm(@PathVariable Long id, Model model){
+        model.addAttribute("match", matchService.getMatchById(id));
+        return "admin/matches/edit";
+    }
+
+    @PostMapping("/matches/{id}/status")
+    public String updateStatus(@PathVariable Long id, @RequestParam String status) {
+        matchService.updateStatus(id, status);
+        return "redirect:/admin?success=updated";
+    }
+
+    @PostMapping("/matches/{id}/result")
+    public String enterResult(
+            @PathVariable Long id,
+            @RequestParam Integer homeScore,
+            @RequestParam Integer awayScore) {
+
+        try {
+            matchService.enterResult(id, homeScore, awayScore);
+            return "redirect:/admin?success=scored";
+        } catch (Exception e) {
+            return "redirect:/admin/matches/" + id + "/edit?error=true";
+        }
+    }
+}

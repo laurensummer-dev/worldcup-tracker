@@ -45,10 +45,10 @@ public class MatchService {
         return matchRepository.findByStatusOrderByKickOffTimeAsc(status);
     }
 
-    public Match createMatch(Integer homeScore, Integer awayScore, LocalDateTime kickOffTime){
+    public Match createMatch(String homeTeam, String awayTeam, LocalDateTime kickOffTime){
         Match match = new Match();
-        match.setHomeScore(homeScore);
-        match.setAwayScore(awayScore);
+        match.setHomeTeam(homeTeam);
+        match.setAwayTeam(awayTeam);
         match.setKickOffTime(kickOffTime);
         return matchRepository.save(match);
     }
