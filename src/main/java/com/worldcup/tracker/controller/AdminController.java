@@ -75,4 +75,14 @@ public class AdminController {
             return "redirect:/admin/matches/" + id + "/edit?error=true";
         }
     }
+
+    @PostMapping("/matches/{id}/delete")
+    public String deleteMatch(@PathVariable Long id){
+        try {
+            matchService.deleteMatch(id);
+            return "redirect:/admin?success=deleted";
+        } catch (IllegalStateException e) {
+            return "redirect:/admin/matches/" + id + "/edit?error=true";
+        }
+    }
 }

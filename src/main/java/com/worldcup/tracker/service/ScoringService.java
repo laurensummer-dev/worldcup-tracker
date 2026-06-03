@@ -14,6 +14,9 @@ import java.util.List;
 @Service
 public class ScoringService {
     
+    private static final int EXACT_SCORE_POINTS = 5;
+    private static final int CORRECT_OUTCOME_POINTS = 2;
+
     private final PredictionRepository predictionRepository;
     private final UserScoreRepository userScoreRepository;
     private final MatchRepository matchRepository;
@@ -46,11 +49,11 @@ public class ScoringService {
         int actualAway = match.getAwayScore();
 
         if (predictedHome == actualHome && predictedAway == actualAway){
-            return 5;
+            return EXACT_SCORE_POINTS;
         }
 
         if (correctOutcome(predictedHome, predictedAway, actualHome, actualAway)){
-            return 2;
+            return CORRECT_OUTCOME_POINTS;
         }
 
         return 0;
@@ -79,9 +82,10 @@ public class ScoringService {
 
         userScore.setTotalPoints(userScore.getTotalPoints() + points);
 
-        if (points == 3){
+        if (points == EXACT_SCORE_POINTS){
             userScore.setCorrectScores(userScore.getCorrectScores() + 1);
-        } else if (points == 1) {
+            userScore.setCorretOutcomes(userScore.getCorrectOutcomes() + 1);
+        } else if (points == CORRECT_OUTCOME_POINTS) {
             userScore.setCorrectScores(userScore.getCorrectOutcomes() + 1);
         }
         

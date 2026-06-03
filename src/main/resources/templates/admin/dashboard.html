@@ -25,6 +25,10 @@
              class="alert alert-success">
             Result entered and points awarded!
         </div>
+        <div th:if="${param.success == 'deleted'}"
+            class="alert alert-success">
+            Fixture deleted successfully!
+        </div>
 
         <!-- Matches table -->
         <div class="card shadow-sm">
@@ -104,6 +108,28 @@
                                    class="btn btn-sm btn-outline-primary">
                                     Edit
                                 </a>
+
+                                <form th:if="${!match.scored}"
+                                    method="post"
+                                    th:action="@{/admin/matches/{id}/delete(id=${match.id})}"
+                                    class="d-inline">
+                                    <input type="hidden"
+                                        th:name="${_csrf.parameterName}"
+                                        th:value="${_csrf.token}"/>
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Are you sure? All predictions for this fixture will be deleted.')">
+                                        Delete
+                                    </button>
+                                </form>
+
+                                <!-- Greyed out if scored -->
+                                <button th:if="${match.scored}"
+                                        class="btn btn-sm btn-outline-danger"
+                                        disabled
+                                        title="Cannot delete a scored match">
+                                    Delete
+                                </button>
                             </td>
                         </tr>
                     </tbody>

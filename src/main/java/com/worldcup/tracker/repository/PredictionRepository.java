@@ -26,4 +26,6 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long>{
 
     // Find all predictions for a match that have been awarded points
     List<Prediction> findByMatchAndPointsAwardedGreaterThan(Match match, Integer points);
+
+    void deleteByMatch(Match match);
 }

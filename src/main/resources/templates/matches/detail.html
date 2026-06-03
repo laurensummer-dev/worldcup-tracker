@@ -123,9 +123,11 @@
                     <div th:if="${userPrediction != null}">
                         <p class="text-muted mb-1">Your prediction:</p>
                         <p class="fs-4 fw-bold">
+                            <span th:text="${match.homeTeam}">Home</span>
                             <span th:text="${userPrediction.homeScore}">0</span>
                             -
                             <span th:text="${userPrediction.awayScore}">0</span>
+                            <span th:text="${match.awayTeam}">Away</span>
                         </p>
                         <!-- Points awarded if match completed -->
                         <div th:if="${match.status == 'COMPLETED'}">
@@ -184,9 +186,11 @@
                                 username
                             </td>
                             <td>
+                                <span th:text="${match.homeTeam}">Home</span>
                                 <span th:text="${prediction.homeScore}">0</span>
                                 -
                                 <span th:text="${prediction.awayScore}">0</span>
+                                <span th:text="${match.awayTeam}">Away</span>
                             </td>
                             <td th:if="${match.status == 'COMPLETED'}"
                                 th:text="${prediction.pointsAwarded}">

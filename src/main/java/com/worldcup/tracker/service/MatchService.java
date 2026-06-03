@@ -2,6 +2,8 @@ package com.worldcup.tracker.service;
 
 import com.worldcup.tracker.model.Match;
 import com.worldcup.tracker.repository.MatchRepository;
+import com.worldcup.tracker.repository.PredictionRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,10 +14,12 @@ public class MatchService {
     
     private final MatchRepository matchRepository;
     private final ScoringService scoringService;
+    private final PredictionRepository predictionRepository;
 
-    public MatchService(MatchRepository matchRepository, ScoringService scoringService){
+    public MatchService(MatchRepository matchRepository, ScoringService scoringService, PredictionRepository predictionRepository){
         this.matchRepository = matchRepository;
         this.scoringService = scoringService;
+        this.predictionRepository = predictionRepository;
     }
 
     public Match enterResult(Long id, Integer homeScore, Integer awayScore){
@@ -82,5 +86,16 @@ public class MatchService {
     public void markAsScored(Match match){
         match.setScored(true);
         matchRepository.save(match);
+    }
+
+    public void deleteMatch(Long id){
+        Match match = getMatchById(id);
+
+        if(match.getScored()) {
+            throw new IllegalStateException("Cannot delete a match that has already been scored.");
+        }
+
+        predictionRepository.deleteByMatch(match);
+        matchRepository.deleteById(id);
     }
 }

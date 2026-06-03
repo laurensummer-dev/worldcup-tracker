@@ -47,7 +47,7 @@ public class MatchController {
         User user = getUser(userDetails);
         Match match = matchService.getMatchById(id);
 
-        Optional<Prediction> userPrediction = predictionService.getPrediction(user, match);
+        Prediction userPrediction = predictionService.getPrediction(user, match).orElse(null);
         List<Prediction> visiblePredictions = predictionService.getVisiblePredictions(user, match);
 
         model.addAttribute("match", match);
