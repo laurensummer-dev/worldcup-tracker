@@ -4,7 +4,6 @@ import com.worldcup.tracker.model.Match;
 import com.worldcup.tracker.repository.UserRepository;
 import com.worldcup.tracker.service.MatchService;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.security.access.method.P;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;

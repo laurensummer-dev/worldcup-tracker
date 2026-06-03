@@ -3,6 +3,7 @@ package com.worldcup.tracker.service;
 import com.worldcup.tracker.model.Match;
 import com.worldcup.tracker.model.Prediction;
 import com.worldcup.tracker.model.UserScore;
+import com.worldcup.tracker.repository.MatchRepository;
 import com.worldcup.tracker.repository.PredictionRepository;
 import com.worldcup.tracker.repository.UserScoreRepository;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,12 @@ public class ScoringService {
     
     private final PredictionRepository predictionRepository;
     private final UserScoreRepository userScoreRepository;
+    private final MatchRepository matchRepository;
 
-    public ScoringService(PredictionRepository predictionRepository, UserScoreRepository userScoreRepository, MatchService matchService){
+    public ScoringService(PredictionRepository predictionRepository, UserScoreRepository userScoreRepository, MatchRepository matchRepository){
         this.predictionRepository = predictionRepository;
         this.userScoreRepository = userScoreRepository;
+        this.matchRepository = matchRepository;
     }
 
     @Transactional
@@ -33,6 +36,7 @@ public class ScoringService {
         }
 
         match.setScored(true);
+        matchRepository.save(match);
     }
 
     private int calculatePoints(Prediction prediction, Match match){
@@ -42,11 +46,11 @@ public class ScoringService {
         int actualAway = match.getAwayScore();
 
         if (predictedHome == actualHome && predictedAway == actualAway){
-            return 3;
+            return 5;
         }
 
         if (correctOutcome(predictedHome, predictedAway, actualHome, actualAway)){
-            return 1;
+            return 2;
         }
 
         return 0;
