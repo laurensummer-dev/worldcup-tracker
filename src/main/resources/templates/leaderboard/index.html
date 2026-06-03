@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:replace="~{layout :: layout(~{::content})}">
+    <div th:fragment="content">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Leaderboard</h1>
+        </div>
+
+        <!-- User's current standing -->
+        <div class="card shadow-sm mb-4 border-primary"
+             th:if="${userScore != null}">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <p class="text-muted mb-0">Your Rank</p>
+                        <p class="display-6 fw-bold text-primary"
+                           th:text="${userRank != -1 ? '#' + userRank : '-'}">
+                            #1
+                        </p>
+                    </div>
+                    <div class="col-md-3">
+                        <p class="text-muted mb-0">Total Points</p>
+                        <p class="display-6 fw-bold text-success"
+                           th:text="${userScore.totalPoints}">
+                            0
+                        </p>
+                    </div>
+                    <div class="col-md-3">
+                        <p class="text-muted mb-0">Exact Scores</p>
+                        <p class="display-6 fw-bold text-warning"
+                           th:text="${userScore.correctScores}">
+                            0
+                        </p>
+                    </div>
+                    <div class="col-md-3">
+                        <p class="text-muted mb-0">Correct Outcomes</p>
+                        <p class="display-6 fw-bold text-info"
+                           th:text="${userScore.correctOutcomes}">
+                            0
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No predictions yet -->
+        <div th:if="${userScore == null}"
+             class="alert alert-info">
+            You haven't made any predictions yet.
+            <a href="/matches">Make your first prediction!</a>
+        </div>
+
+        <!-- Leaderboard table -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">Rankings</h5>
+            </div>
+            <div class="card-body p-0">
+
+                <div th:if="${#lists.isEmpty(leaderboard)}"
+                     class="p-4 text-muted">
+                    No scores yet — check back after the first match!
+                </div>
+
+                <table th:unless="${#lists.isEmpty(leaderboard)}"
+                       class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Points</th>
+                            <th>Exact Scores</th>
+                            <th>Correct Outcomes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="score, iter : ${leaderboard}"
+                            th:classappend="${score.user.username ==
+                                user.username} ? 'table-primary fw-bold'">
+
+                            <!-- Rank with medal for top 3 -->
+                            <td>
+                                <span th:switch="${iter.index}">
+                                    <span th:case="0">🥇</span>
+                                    <span th:case="1">🥈</span>
+                                    <span th:case="2">🥉</span>
+                                    <span th:case="*"
+                                          th:text="${iter.index + 1}">
+                                        4
+                                    </span>
+                                </span>
+                            </td>
+
+                            <td th:text="${score.user.username}">
+                                username
+                            </td>
+                            <td class="fw-bold"
+                                th:text="${score.totalPoints}">
+                                0
+                            </td>
+                            <td th:text="${score.correctScores}">
+                                0
+                            </td>
+                            <td th:text="${score.correctOutcomes}">
+                                0
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- HTMX auto refresh every 30 seconds -->
+        <div hx-get="/leaderboard"
+             hx-trigger="every 30s"
+             hx-swap="none">
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

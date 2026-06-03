@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<div th:replace="~{layout :: layout(~{::content})}">
+    <div th:fragment="content">
+
+        <a href="/matches" class="btn btn-outline-secondary btn-sm mb-3">
+            ← Back to Matches
+        </a>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body text-center">
+
+                <!-- Status badge -->
+                <span th:switch="${match.status}">
+                    <span th:case="'SCHEDULED'"
+                          class="badge bg-primary mb-2">Scheduled</span>
+                    <span th:case="'IN_PROGRESS'"
+                          class="badge bg-success mb-2">Live</span>
+                    <span th:case="'COMPLETED'"
+                          class="badge bg-secondary mb-2">Completed</span>
+                </span>
+
+                <h2 th:text="${match.homeTeam} + ' vs ' + ${match.awayTeam}">
+                    Home vs Away
+                </h2>
+
+                <p class="text-muted"
+                   th:text="${#temporals.format(match.kickOffTime,
+                   'EEEE d MMMM yyyy, HH:mm')}">
+                    Date
+                </p>
+
+                <!-- Final score if completed -->
+                <div th:if="${match.status == 'COMPLETED'}"
+                     class="display-4 fw-bold">
+                    <span th:text="${match.homeScore}">0</span>
+                    -
+                    <span th:text="${match.awayScore}">0</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Success / error messages -->
+        <div th:if="${param.success}"
+             class="alert alert-success">
+            Your prediction has been saved successfully!
+        </div>
+        <div th:if="${param.error == 'locked'}"
+             class="alert alert-danger">
+            Predictions are locked for this match.
+        </div>
+        <div th:if="${param.error == 'invalid'}"
+             class="alert alert-danger">
+            Invalid scores — please enter valid numbers.
+        </div>
+
+        <!-- Prediction section -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Your Prediction</h5>
+            </div>
+            <div class="card-body">
+
+                <!-- Can edit — show form -->
+                <div th:if="${canEdit}">
+                    <form method="post"
+                          th:action="@{/matches/{id}/predict(id=${match.id})}">
+                        <input type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}"/>
+
+                        <div class="row align-items-center g-3">
+                            <div class="col-md-4">
+                                <label class="form-label"
+                                       th:text="${match.homeTeam}">
+                                    Home
+                                </label>
+                                <input type="number"
+                                       name="homeScore"
+                                       class="form-control"
+                                       min="0"
+                                       max="20"
+                                       th:value="${userPrediction != null ?
+                                           userPrediction.homeScore : 0}"
+                                       required/>
+                            </div>
+                            <div class="col-md-1 text-center pt-4">
+                                <span class="fw-bold">-</span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label"
+                                       th:text="${match.awayTeam}">
+                                    Away
+                                </label>
+                                <input type="number"
+                                       name="awayScore"
+                                       class="form-control"
+                                       min="0"
+                                       max="20"
+                                       th:value="${userPrediction != null ?
+                                           userPrediction.awayScore : 0}"
+                                       required/>
+                            </div>
+                            <div class="col-md-3 pt-4">
+                                <button type="submit"
+                                        class="btn btn-primary w-100">
+                                    <span th:text="${userPrediction != null ?
+                                        'Update Prediction' :
+                                        'Submit Prediction'}">
+                                        Submit
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Cannot edit — show read only prediction -->
+                <div th:unless="${canEdit}">
+                    <div th:if="${userPrediction != null}">
+                        <p class="text-muted mb-1">Your prediction:</p>
+                        <p class="fs-4 fw-bold">
+                            <span th:text="${userPrediction.homeScore}">0</span>
+                            -
+                            <span th:text="${userPrediction.awayScore}">0</span>
+                        </p>
+                        <!-- Points awarded if match completed -->
+                        <div th:if="${match.status == 'COMPLETED'}">
+                            <span th:switch="${userPrediction.pointsAwarded}">
+                                <span th:case="3"
+                                      class="badge bg-success fs-6">
+                                    🎯 Exact score — 3 points!
+                                </span>
+                                <span th:case="1"
+                                      class="badge bg-warning fs-6">
+                                    ✅ Correct outcome — 1 point
+                                </span>
+                                <span th:case="0"
+                                      class="badge bg-danger fs-6">
+                                    ❌ Unlucky — 0 points
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div th:unless="${userPrediction != null}">
+                        <p class="text-muted">
+                            You did not make a prediction for this match.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Other users' predictions -->
+        <div class="card shadow-sm" th:if="${canViewOthers}">
+            <div class="card-header">
+                <h5 class="mb-0">All Predictions</h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(visiblePredictions)}"
+                     class="text-muted">
+                    No predictions were made for this match.
+                </div>
+                <table th:unless="${#lists.isEmpty(visiblePredictions)}"
+                       class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Prediction</th>
+                            <th th:if="${match.status == 'COMPLETED'}">
+                                Points
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="prediction : ${visiblePredictions}"
+                            th:classappend="${prediction.user.username ==
+                                user.username} ? 'table-primary'">
+                            <td th:text="${prediction.user.username}">
+                                username
+                            </td>
+                            <td>
+                                <span th:text="${prediction.homeScore}">0</span>
+                                -
+                                <span th:text="${prediction.awayScore}">0</span>
+                            </td>
+                            <td th:if="${match.status == 'COMPLETED'}"
+                                th:text="${prediction.pointsAwarded}">
+                                0
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Lock message -->
+        <div th:unless="${canViewOthers}"
+             class="alert alert-info mt-3">
+            Other predictions will be visible 1 hour before kick off.
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

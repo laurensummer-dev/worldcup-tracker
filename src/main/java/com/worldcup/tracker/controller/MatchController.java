@@ -29,6 +29,19 @@ public class MatchController {
         this.userRepository = userRepository;
     }
 
+    @GetMapping("/matches")
+    public String matches(Model model,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        User user = getUser(userDetails);
+
+        model.addAttribute("matches", matchService.getAllMatches());
+        model.addAttribute("matchService", matchService);
+        model.addAttribute("user", user);
+
+        return "matches/list";
+    }
+
     @GetMapping("/matches/{id}")
     public String matchDetail(@PathVariable Long id, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         User user = getUser(userDetails);

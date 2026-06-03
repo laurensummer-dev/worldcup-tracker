@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<div th:replace="~{layout :: layout(~{::content})}">
+    <div th:fragment="content">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Matches</h1>
+        </div>
+
+        <!-- No matches yet -->
+        <div th:if="${#lists.isEmpty(matches)}"
+             class="alert alert-info">
+            No matches scheduled yet. Check back soon!
+        </div>
+
+        <!-- Match cards -->
+        <div class="row row-cols-1 row-cols-md-2 g-4"
+             th:unless="${#lists.isEmpty(matches)}">
+
+            <div class="col" th:each="match : ${matches}">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+
+                        <!-- Status badge -->
+                        <span th:switch="${match.status}">
+                            <span th:case="'SCHEDULED'"
+                                  class="badge bg-primary float-end">
+                                Scheduled
+                            </span>
+                            <span th:case="'IN_PROGRESS'"
+                                  class="badge bg-success float-end">
+                                Live
+                            </span>
+                            <span th:case="'COMPLETED'"
+                                  class="badge bg-secondary float-end">
+                                Completed
+                            </span>
+                        </span>
+
+                        <!-- Teams -->
+                        <h5 class="card-title"
+                            th:text="${match.homeTeam} + ' vs ' + ${match.awayTeam}">
+                            Home vs Away
+                        </h5>
+
+                        <!-- Kick off time -->
+                        <p class="card-text text-muted">
+                            <small th:text="${#temporals.format(match.kickOffTime, 'EEE d MMM yyyy, HH:mm')}">
+                                Date
+                            </small>
+                        </p>
+
+                        <!-- Result if completed -->
+                        <p th:if="${match.status == 'COMPLETED'}"
+                           class="card-text fw-bold fs-5 text-center">
+                            <span th:text="${match.homeScore}">0</span>
+                            -
+                            <span th:text="${match.awayScore}">0</span>
+                        </p>
+
+                        <!-- Lock warning -->
+                        <p th:if="${matchService.isLocked(match) and match.status == 'SCHEDULED'}"
+                           class="card-text text-warning small">
+                            ⚠ Predictions are locked
+                        </p>
+
+                    </div>
+                    <div class="card-footer">
+                        <a th:href="@{/matches/{id}(id=${match.id})}"
+                           class="btn btn-primary btn-sm w-100">
+                            View Match
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

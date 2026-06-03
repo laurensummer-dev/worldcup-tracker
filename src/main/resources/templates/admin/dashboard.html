@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:replace="~{layout :: layout(~{::content})}">
+    <div th:fragment="content">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Admin Dashboard</h1>
+            <a href="/admin/matches/create"
+               class="btn btn-success">
+                + Create Fixture
+            </a>
+        </div>
+
+        <!-- Success messages -->
+        <div th:if="${param.success == 'created'}"
+             class="alert alert-success">
+            Fixture created successfully!
+        </div>
+        <div th:if="${param.success == 'updated'}"
+             class="alert alert-success">
+            Match updated successfully!
+        </div>
+        <div th:if="${param.success == 'scored'}"
+             class="alert alert-success">
+            Result entered and points awarded!
+        </div>
+
+        <!-- Matches table -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">All Fixtures</h5>
+            </div>
+            <div class="card-body p-0">
+
+                <div th:if="${#lists.isEmpty(matches)}"
+                     class="p-4 text-muted">
+                    No fixtures created yet.
+                </div>
+
+                <table th:unless="${#lists.isEmpty(matches)}"
+                       class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Match</th>
+                            <th>Kick Off</th>
+                            <th>Status</th>
+                            <th>Result</th>
+                            <th>Scored</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="match : ${matches}">
+                            <td th:text="${match.homeTeam}
+                                + ' vs ' + ${match.awayTeam}">
+                                Home vs Away
+                            </td>
+                            <td th:text="${#temporals.format(
+                                match.kickOffTime,
+                                'dd MMM yyyy, HH:mm')}">
+                                Date
+                            </td>
+                            <td>
+                                <span th:switch="${match.status}">
+                                    <span th:case="'SCHEDULED'"
+                                          class="badge bg-primary">
+                                        Scheduled
+                                    </span>
+                                    <span th:case="'IN_PROGRESS'"
+                                          class="badge bg-success">
+                                        Live
+                                    </span>
+                                    <span th:case="'COMPLETED'"
+                                          class="badge bg-secondary">
+                                        Completed
+                                    </span>
+                                </span>
+                            </td>
+                            <td>
+                                <span th:if="${match.homeScore != null}"
+                                      th:text="${match.homeScore}
+                                      + ' - ' + ${match.awayScore}">
+                                    0 - 0
+                                </span>
+                                <span th:unless="${match.homeScore != null}"
+                                      class="text-muted">
+                                    -
+                                </span>
+                            </td>
+                            <td>
+                                <span th:if="${match.scored}"
+                                      class="badge bg-success">
+                                    ✓ Yes
+                                </span>
+                                <span th:unless="${match.scored}"
+                                      class="badge bg-warning">
+                                    Pending
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/matches/{id}/edit
+                                    (id=${match.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Edit
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
