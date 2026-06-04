@@ -35,6 +35,9 @@ public class Match {
     @Column(name="created_at", nullable=false, updatable=false)
     private LocalDateTime createdAt;
 
+    @Column(name = "group_name", nullable = false)
+    private String groupName;
+
     @PrePersist
     protected void onCreate(){
         createdAt = LocalDateTime.now();
@@ -103,5 +106,12 @@ public class Match {
     }
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getGroupName(){
+        return groupName;
+    }
+    public void setGroupName(String groupName){
+        this.groupName = groupName;
     }
 }

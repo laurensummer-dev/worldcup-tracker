@@ -28,4 +28,11 @@ public interface MatchRepository extends JpaRepository<Match, Long>{
             LocalDateTime now,
             @org.springframework.data.repository.query.Param("oneHourFromNow")
             LocalDateTime oneHourFromNow);
+    
+    // Find all matches for a specific group
+    List<Match> findByGroupNameOrderByKickOffTimeAsc(String groupName);
+
+    // Find all distinct group names that have fixtures
+    @Query("SELECT DISTINCT m.groupName FROM Match m ORDER BY m.groupName ASC")
+    List<String> findDistinctGroupNames();
 }

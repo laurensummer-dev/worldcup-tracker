@@ -12,8 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Optional;
 import java.util.List;
 
 @Controller
@@ -30,17 +30,43 @@ public class MatchController {
     }
 
     @GetMapping("/matches")
-    public String matches(Model model,
+    public String matches(@RequestParam(value="group", required=false) String group, Model model,
             @AuthenticationPrincipal UserDetails userDetails) {
 
         User user = getUser(userDetails);
 
-        model.addAttribute("matches", matchService.getAllMatches());
+        List<String> groups = matchService.getDistinctGroups();
+        List<Match> allMatches = matchService.getAllMatches();
+
+        model.addAttribute("groups", groups);
+        model.addAttribute("allMatches", allMatches);
         model.addAttribute("matchService", matchService);
         model.addAttribute("user", user);
+        model.addAttribute("selectedGroup", group);
+
+        if(group != null && !group.isEmpty()){
+            List<Match> groupMatches = matchService.getMatchesByGroup(group);
+            model.addAttribute("groupMatches", groupMatches);
+        }
 
         return "matches/list";
     }
+
+    @GetMapping("/matches/group/{groupName}")
+    public String groupFixtures(@PathVariable String groupName, Model model, @AuthenticationPrincipal UserDetails userDetails) {
+
+        User user = getUser(userDetails);
+        List<Match> groupMatches = matchService.getMatchesByGroup(groupName);
+
+        model.addAttribute("groupMatches", groupMatches);
+        model.addAttribute("selectedGroup", groupName);
+        model.addAttribute("matchService", matchService);
+        model.addAttribute("user", user);
+        model.addAttribute("predictionService", predictionService);
+
+        return "/matches/group-fixtures :: fixturesFragment";
+    }
+
 
     @GetMapping("/matches/{id}")
     public String matchDetail(@PathVariable Long id, Model model, @AuthenticationPrincipal UserDetails userDetails) {

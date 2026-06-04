@@ -1,6 +1,7 @@
 package com.worldcup.tracker.controller;
 
 import com.worldcup.tracker.model.Match;
+import com.worldcup.tracker.model.Prediction;
 import com.worldcup.tracker.model.User;
 import com.worldcup.tracker.repository.UserRepository;
 import com.worldcup.tracker.service.MatchService;
@@ -11,16 +12,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class PredictionController {
-    
+
     private final PredictionService predictionService;
     private final MatchService matchService;
     private final UserRepository userRepository;
 
-    PredictionController(PredictionService predictionService, MatchService matchService, UserRepository userRepository){
+    public PredictionController(PredictionService predictionService,
+                                MatchService matchService,
+                                UserRepository userRepository) {
         this.predictionService = predictionService;
         this.matchService = matchService;
         this.userRepository = userRepository;
@@ -31,6 +35,7 @@ public class PredictionController {
             @PathVariable Long id,
             @RequestParam Integer homeScore,
             @RequestParam Integer awayScore,
+            @RequestHeader(value = "X-Requested-With", required = false) String requestedWith,
             @AuthenticationPrincipal UserDetails userDetails,
             Model model) {
 
@@ -38,15 +43,33 @@ public class PredictionController {
         Match match = matchService.getMatchById(id);
 
         try {
-            predictionService.savePrediction(user, match, homeScore, awayScore);
+            predictionService.savePrediction(
+                    user, match, homeScore, awayScore);
+
+            if ("XMLHttpRequest".equals(requestedWith)) {
+                Prediction prediction = predictionService
+                        .getPrediction(user, match)
+                        .orElse(null);
+
+                model.addAttribute("match", match);
+                model.addAttribute("user", user);
+                model.addAttribute("prediction", prediction);
+                model.addAttribute("predictionService", predictionService);
+                model.addAttribute("matchService", matchService);
+
+                return "matches/group-fixtures :: matchRow";
+            }
             return "redirect:/matches/" + id + "?success=true";
         } catch (IllegalStateException e) {
+            return "redirect:/matches/" + id + "?error=locked";
+        } catch (IllegalArgumentException e) {
             return "redirect:/matches/" + id + "?error=invalid";
         }
     }
 
-    private User getUser(UserDetails userDetails){
+    private User getUser(UserDetails userDetails) {
         return userRepository.findByUsername(userDetails.getUsername())
-            .orElseThrow(() -> new IllegalStateException("Logged in user not found in database"));
+                .orElseThrow(() -> new IllegalStateException(
+                        "Logged in user not found in database"));
     }
 }

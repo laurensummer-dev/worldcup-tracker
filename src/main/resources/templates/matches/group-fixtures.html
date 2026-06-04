@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="fixturesFragment">
+
+    <div th:if="${#lists.isEmpty(groupMatches)}"
+         class="alert alert-info">
+        No fixtures scheduled for this group yet.
+    </div>
+
+    <div th:unless="${#lists.isEmpty(groupMatches)}"
+         class="list-group list-group-flush">
+        <div th:each="match : ${groupMatches}"
+             th:id="'match-' + ${match.id}"
+             th:insert="~{matches/group-fixtures :: matchRow}">
+        </div>
+    </div>
+
+</div>
+
+<div th:fragment="matchRow"
+     th:id="'match-' + ${match.id}"
+     class="list-group-item p-3">
+
+    <div class="row align-items-center"
+         th:with="prediction=${predictionService
+             .getPrediction(user, match).orElse(null)}">
+
+        <div class="col-md-4">
+
+            <span th:switch="${match.status}">
+                <span th:case="'SCHEDULED'"
+                      class="badge bg-primary mb-1">
+                    Scheduled
+                </span>
+                <span th:case="'IN_PROGRESS'"
+                      class="badge bg-success mb-1">
+                    Live
+                </span>
+                <span th:case="'COMPLETED'"
+                      class="badge bg-secondary mb-1">
+                    Completed
+                </span>
+            </span>
+
+            <p class="fw-bold mb-0"
+               th:text="${match.homeTeam}
+                   + ' vs ' + ${match.awayTeam}">
+                Home vs Away
+            </p>
+
+            <small class="text-muted"
+                   th:text="${#temporals.format(
+                       match.kickOffTime,
+                       'EEE d MMM yyyy, HH:mm')}">
+                Date
+            </small>
+
+            <p th:if="${match.status == 'COMPLETED'}"
+               class="fw-bold fs-5 mb-0 mt-1">
+                <span th:text="${match.homeScore}">0</span>
+                -
+                <span th:text="${match.awayScore}">0</span>
+            </p>
+
+        </div>
+
+        <div class="col-md-8">
+            <div th:if="${!matchService.isLocked(match)}">
+                <form th:attr="hx-post=${'/matches/'
+                          + match.id + '/predict'},
+                          hx-target=${'#match-' + match.id},
+                          hx-swap='outerHTML'"
+                      hx-headers='{"X-Requested-With":
+                          "XMLHttpRequest"}'>
+
+                    <input type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}"/>
+
+                    <div class="row g-2 align-items-end">
+                        <div class="col">
+                            <label class="form-label small mb-1"
+                                   th:text="${match.homeTeam}">
+                                Home
+                            </label>
+                            <input type="number"
+                                   name="homeScore"
+                                   class="form-control form-control-sm"
+                                   min="0"
+                                   max="20"
+                                   th:value="${prediction != null ?
+                                       prediction.homeScore : 0}"
+                                   required/>
+                        </div>
+                        <div class="col-auto pb-1">
+                            <span class="fw-bold">-</span>
+                        </div>
+                        <div class="col">
+                            <label class="form-label small mb-1"
+                                   th:text="${match.awayTeam}">
+                                Away
+                            </label>
+                            <input type="number"
+                                   name="awayScore"
+                                   class="form-control form-control-sm"
+                                   min="0"
+                                   max="20"
+                                   th:value="${prediction != null ?
+                                       prediction.awayScore : 0}"
+                                   required/>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit"
+                                    class="btn btn-primary btn-sm">
+                                <span th:text="${prediction != null ?
+                                    'Update' : 'Submit'}">
+                                    Submit
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <p th:if="${prediction != null}"
+                       class="text-muted small mt-1 mb-0">
+                        Current prediction:
+                        <strong>
+                            <span th:text="${match.homeTeam}">
+                                Home
+                            </span>
+                            <span th:text="${prediction.homeScore}">
+                                0
+                            </span>
+                            -
+                            <span th:text="${prediction.awayScore}">
+                                0
+                            </span>
+                            <span th:text="${match.awayTeam}">
+                                Away
+                            </span>
+                        </strong>
+                    </p>
+
+                </form>
+            </div>
+
+            <div th:unless="${!matchService.isLocked(match)}">
+
+                <div th:if="${prediction != null}">
+                    <p class="text-muted small mb-1">
+                        Your prediction:
+                    </p>
+                    <p class="fw-bold mb-0">
+                        <span th:text="${match.homeTeam}">Home</span>
+                        <span th:text="${prediction.homeScore}">0</span>
+                        -
+                        <span th:text="${prediction.awayScore}">0</span>
+                        <span th:text="${match.awayTeam}">Away</span>
+                    </p>
+
+                    <div th:if="${match.status == 'COMPLETED'}"
+                         class="mt-1">
+                        <span th:switch="${prediction.pointsAwarded}">
+                            <span th:case="5"
+                                  class="badge bg-success">
+                                Exact score — 5 points!
+                            </span>
+                            <span th:case="2"
+                                  class="badge bg-warning text-dark">
+                                Correct outcome — 2 points
+                            </span>
+                            <span th:case="0"
+                                  class="badge bg-danger">
+                                Unlucky — 0 points
+                            </span>
+                        </span>
+                    </div>
+                </div>
+
+                <div th:unless="${prediction != null}">
+                    <p class="text-muted small mb-0">
+                        No prediction submitted
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,11 +1,8 @@
 package com.worldcup.tracker.controller;
 
-import com.worldcup.tracker.model.Match;
 import com.worldcup.tracker.repository.UserRepository;
 import com.worldcup.tracker.service.MatchService;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -31,11 +29,14 @@ public class AdminController {
     @GetMapping
     public String dashboard(Model model){
         model.addAttribute("matches", matchService.getAllMatches());
+        model.addAttribute("groups", matchService.getDistinctGroups());
         return "admin/dashboard";
     }
 
     @GetMapping("/matches/create")
-    public String createMatchForm(){
+    public String createMatchForm(Model model){
+        model.addAttribute("groups", List.of("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"));
+
         return "admin/matches/create";
     }
 
@@ -44,15 +45,17 @@ public class AdminController {
             @RequestParam String homeTeam,
             @RequestParam String awayTeam,
             @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME)
-            LocalDateTime kickOffTime) {
+            LocalDateTime kickOffTime,
+            @RequestParam String groupName) {
 
-        matchService.createMatch(homeTeam, awayTeam, kickOffTime);
+        matchService.createMatch(homeTeam, awayTeam, kickOffTime, groupName);
         return "redirect:/admin?success=created";
     }
 
     @GetMapping("/matches/{id}/edit")
     public String editMatchForm(@PathVariable Long id, Model model){
         model.addAttribute("match", matchService.getMatchById(id));
+        model.addAttribute("groups", List.of("A", "B", "C", "D", "E", "F","G", "H", "I", "J", "K", "L"));
         return "admin/matches/edit";
     }
 
@@ -84,5 +87,13 @@ public class AdminController {
         } catch (IllegalStateException e) {
             return "redirect:/admin/matches/" + id + "/edit?error=true";
         }
+    }
+
+    @PostMapping("/matches/{id}/group")
+    public String updateGroup(
+            @PathVariable Long id,
+            @RequestParam String groupName) {
+        matchService.updateGroup(id, groupName);
+        return "redirect:/admin?success=updated";
     }
 }

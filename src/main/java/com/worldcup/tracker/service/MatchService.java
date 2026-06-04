@@ -3,7 +3,6 @@ package com.worldcup.tracker.service;
 import com.worldcup.tracker.model.Match;
 import com.worldcup.tracker.repository.MatchRepository;
 import com.worldcup.tracker.repository.PredictionRepository;
-
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,7 +28,6 @@ public class MatchService {
         match.setAwayScore(awayScore);
         matchRepository.save(match);
 
-        // trigger scoring immediately
         scoringService.scoreMatch(match);
 
         return match;
@@ -50,11 +48,12 @@ public class MatchService {
         return matchRepository.findByStatusOrderByKickOffTimeAsc(status);
     }
 
-    public Match createMatch(String homeTeam, String awayTeam, LocalDateTime kickOffTime){
+    public Match createMatch(String homeTeam, String awayTeam, LocalDateTime kickOffTime, String groupName){
         Match match = new Match();
         match.setHomeTeam(homeTeam);
         match.setAwayTeam(awayTeam);
         match.setKickOffTime(kickOffTime);
+        match.setGroupName(groupName);
         return matchRepository.save(match);
     }
 
@@ -110,5 +109,19 @@ public class MatchService {
             return Optional.empty();
         }
         return Optional.of(matches.get(0).getKickOffTime());
+    }
+
+    public List<Match> getMatchesByGroup(String groupName) {
+        return matchRepository.findByGroupNameOrderByKickOffTimeAsc(groupName);
+    }
+
+    public List<String> getDistinctGroups() {
+        return matchRepository.findDistinctGroupNames();
+    }
+
+    public Match updateGroup(Long id, String groupName) {
+        Match match = getMatchById(id);
+        match.setGroupName(groupName);
+        return matchRepository.save(match);
     }
 }
