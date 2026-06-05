@@ -71,7 +71,7 @@ public class UserScore {
     public Integer getCorrectOutcomes(){
         return correctOutcomes;
     }
-    public void setCorretOutcomes(Integer correctOutcomes){
+    public void setCorrectOutcomes(Integer correctOutcomes){
         this.correctOutcomes = correctOutcomes;
     }
 

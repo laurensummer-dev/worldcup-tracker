@@ -10,21 +10,31 @@
             <h1>Matches</h1>
         </div>
 
-        <!-- Tournament lock countdown banner -->
         <div th:if="${!#lists.isEmpty(allMatches)}">
 
-            <div th:if="${matchService.isLocked(allMatches[0])}"
+            <!-- Tournament has started -->
+            <div th:if="${matchService.hasTournamentStarted()}"
                  class="alert alert-warning mb-4">
-                Predictions are now locked — the tournament has begun!
+                Predictions are now locked — the tournament
+                has begun!
             </div>
 
-            <!-- Countdown to lock -->
-            <div th:unless="${matchService.isLocked(allMatches[0])}"
-                 class="alert alert-info mb-4">
+            <!-- Countdown — always show until tournament starts -->
+            <div th:unless="${matchService.hasTournamentStarted()}"
+                 th:classappend="${matchService.isLocked(allMatches[0])} ?
+                     'alert-warning' : 'alert-info'"
+                 class="alert mb-4">
                 <div class="d-flex align-items-center
                             justify-content-between">
                     <div>
-                        Predictions lock 1 hour before
+                        <span th:if="${matchService
+                                .isLocked(allMatches[0])}">
+                            Predictions are locked —
+                        </span>
+                        <span th:unless="${matchService
+                                .isLocked(allMatches[0])}">
+                            Predictions lock 1 hour before
+                        </span>
                         <strong th:text="${allMatches[0].homeTeam}">
                             Team
                         </strong>
@@ -34,8 +44,9 @@
                         </strong>
                     </div>
                     <div class="text-end">
-                        <span class="text-muted small">Locks in:</span>
-                        <br/>
+                        <span class="text-muted small">
+                            Locks in:
+                        </span><br/>
                         <span id="countdown"
                               class="fw-bold fs-5 text-danger">
                             Calculating...
@@ -79,7 +90,8 @@
              aria-labelledby="groupModalLabel"
              aria-hidden="true">
             <div class="modal-dialog modal-xl
-                        modal-fullscreen-md-down modal-dialog-scrollable">
+                        modal-fullscreen-md-down
+                        modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title"
@@ -92,7 +104,8 @@
                                 aria-label="Close">
                         </button>
                     </div>
-                    <div class="modal-body" id="modal-body-content">
+                    <div class="modal-body"
+                         id="modal-body-content">
                         <div class="text-center p-4 text-muted">
                             Loading fixtures...
                         </div>
@@ -102,8 +115,8 @@
         </div>
 
         <!-- Countdown script -->
-        <script th:if="${!#lists.isEmpty(allMatches) and
-                        !matchService.isLocked(allMatches[0])}"
+        <script th:if="${!#lists.isEmpty(allMatches)
+                        and !matchService.hasTournamentStarted()}"
                 th:inline="javascript">
             const kickOffTime = /*[[${#temporals.format(
                 allMatches[0].kickOffTime,
@@ -117,8 +130,11 @@
                 const diff = lockTime - now;
 
                 if (diff <= 0) {
-                    document.getElementById('countdown').textContent
-                        = 'Predictions locked!';
+                    const el = document
+                            .getElementById('countdown');
+                    if (el) {
+                        el.textContent = 'Predictions locked!';
+                    }
                     clearInterval(timer);
                     return;
                 }
@@ -126,7 +142,8 @@
                 const days = Math.floor(
                     diff / (1000 * 60 * 60 * 24));
                 const hours = Math.floor(
-                    (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    (diff % (1000 * 60 * 60 * 24))
+                    / (1000 * 60 * 60));
                 const minutes = Math.floor(
                     (diff % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor(
@@ -139,15 +156,14 @@
                     display += minutes + 'm ';
                 display += seconds + 's';
 
-                document.getElementById('countdown').textContent
-                    = display;
+                const el = document.getElementById('countdown');
+                if (el) el.textContent = display;
             }
 
             updateCountdown();
             const timer = setInterval(updateCountdown, 1000);
         </script>
 
-        <!-- Modal title script -->
         <script>
             function setModalTitle(groupText) {
                 document.getElementById('groupModalLabel')
