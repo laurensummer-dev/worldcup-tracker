@@ -144,4 +144,72 @@ public class MatchService {
 
         return firstKickOff.get().isBefore(LocalDateTime.now());
     }
+
+    @Transactional
+    public Match updateMatch(Long id, String homeTeam,
+                            String awayTeam,
+                            LocalDateTime kickOffTime,
+                            String groupName, String status,
+                            Integer homeScore, Integer awayScore) {
+
+        Match match = getMatchById(id);
+        boolean wasCompleted = match.getStatus().equals("COMPLETED");
+        boolean isNowCompleted = status.equals("COMPLETED");
+        boolean hasScores = homeScore != null && awayScore != null;
+        boolean scoresCleared = wasCompleted && isNowCompleted
+                && !hasScores && match.getScored();
+        boolean scoresChanged = wasCompleted && isNowCompleted
+                && hasScores && match.getScored()
+                && match.getHomeScore() != null
+                && (!match.getHomeScore().equals(homeScore)
+                    || !match.getAwayScore().equals(awayScore));
+
+        // Update basic fields
+        match.setHomeTeam(homeTeam);
+        match.setAwayTeam(awayTeam);
+        match.setKickOffTime(kickOffTime);
+        match.setGroupName(groupName);
+        match.setStatus(status);
+
+        if (isNowCompleted && hasScores) {
+            match.setHomeScore(homeScore);
+            match.setAwayScore(awayScore);
+            matchRepository.save(match);
+
+            if (scoresChanged) {
+                // Result edited — rescore
+                scoringService.rescoreMatch(match);
+            } else if (!match.getScored()) {
+                // First time scoring
+                scoringService.scoreMatch(match);
+            }
+
+        } else if (isNowCompleted && scoresCleared) {
+            // Scores cleared — reverse points and clear scores
+            scoringService.rescoreMatch(match);
+            match = getMatchById(id);
+            match.setHomeScore(null);
+            match.setAwayScore(null);
+            match.setScored(false);
+            matchRepository.save(match);
+
+        } else if (!isNowCompleted && wasCompleted
+                && match.getScored()) {
+            // Reverted from COMPLETED — reverse points
+            scoringService.rescoreMatch(match);
+            match = getMatchById(id);
+            match.setStatus(status);
+            match.setHomeScore(null);
+            match.setAwayScore(null);
+            matchRepository.save(match);
+
+        } else {
+            matchRepository.save(match);
+        }
+
+        entityManager.flush();
+        entityManager.clear();
+
+        return getMatchById(id);
+    }
 }

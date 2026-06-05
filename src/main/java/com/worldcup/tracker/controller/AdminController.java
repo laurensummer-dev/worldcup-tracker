@@ -52,30 +52,38 @@ public class AdminController {
         return "redirect:/admin?success=created";
     }
 
+    // Show edit match form
     @GetMapping("/matches/{id}/edit")
-    public String editMatchForm(@PathVariable Long id, Model model){
+    public String editMatchForm(@PathVariable Long id, Model model) {
         model.addAttribute("match", matchService.getMatchById(id));
-        model.addAttribute("groups", List.of("A", "B", "C", "D", "E", "F","G", "H", "I", "J", "K", "L"));
+        model.addAttribute("groups", List.of(
+                "A", "B", "C", "D", "E", "F",
+                "G", "H", "I", "J", "K", "L"));
         return "admin/matches/edit";
     }
 
-    @PostMapping("/matches/{id}/status")
-    public String updateStatus(@PathVariable Long id, @RequestParam String status) {
-        matchService.updateStatus(id, status);
-        return "redirect:/admin?success=updated";
-    }
-
-    @PostMapping("/matches/{id}/result")
-    public String enterResult(
+    // Handle single form submission for all match fields
+    @PostMapping("/matches/{id}/edit")
+    public String updateMatch(
             @PathVariable Long id,
-            @RequestParam Integer homeScore,
-            @RequestParam Integer awayScore) {
+            @RequestParam String homeTeam,
+            @RequestParam String awayTeam,
+            @RequestParam @DateTimeFormat(
+                    iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime kickOffTime,
+            @RequestParam String groupName,
+            @RequestParam String status,
+            @RequestParam(required = false) Integer homeScore,
+            @RequestParam(required = false) Integer awayScore) {
 
         try {
-            matchService.enterResult(id, homeScore, awayScore);
-            return "redirect:/admin?success=scored";
+            matchService.updateMatch(id, homeTeam, awayTeam,
+                    kickOffTime, groupName, status,
+                    homeScore, awayScore);
+            return "redirect:/admin?success=updated";
         } catch (Exception e) {
-            return "redirect:/admin/matches/" + id + "/edit?error=true";
+            return "redirect:/admin/matches/" + id
+                    + "/edit?error=true";
         }
     }
 
@@ -87,13 +95,5 @@ public class AdminController {
         } catch (IllegalStateException e) {
             return "redirect:/admin/matches/" + id + "/edit?error=true";
         }
-    }
-
-    @PostMapping("/matches/{id}/group")
-    public String updateGroup(
-            @PathVariable Long id,
-            @RequestParam String groupName) {
-        matchService.updateGroup(id, groupName);
-        return "redirect:/admin?success=updated";
     }
 }

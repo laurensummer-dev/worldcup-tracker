@@ -46,52 +46,59 @@ public class ScoringService {
     }
 
     @Transactional
-    public void rescoreMatch(Match match) {
-        List<Prediction> predictions = predictionRepository
-                .findByMatch(match);
+	public void rescoreMatch(Match match) {
+		reversePoints(match);
 
-        // Reverse previously awarded points
-        for (Prediction prediction : predictions) {
-            if (prediction.getPointsAwarded() > 0) {
-                UserScore userScore = userScoreRepository
-                        .findByUser(prediction.getUser())
-                        .orElse(null);
+		// Only rescore if match still has a valid result
+		if (match.getHomeScore() != null
+				&& match.getAwayScore() != null
+				&& match.getStatus().equals("COMPLETED")) {
+			scoreMatch(match);
+		} else {
+			match.setScored(false);
+			matchRepository.save(match);
+		}
+	}
 
-                if (userScore != null) {
-                    userScore.setTotalPoints(
-                            userScore.getTotalPoints()
-                            - prediction.getPointsAwarded());
+	@Transactional
+	public void reversePoints(Match match) {
+		List<Prediction> predictions = predictionRepository
+				.findByMatch(match);
 
-                    if (prediction.getPointsAwarded()
-                            == EXACT_SCORE_POINTS) {
-                        userScore.setCorrectScores(
-                                Math.max(0,
-                                userScore.getCorrectScores() - 1));
-                        userScore.setCorrectOutcomes(
-                                Math.max(0,
-                                userScore.getCorrectOutcomes() - 1));
-                    } else if (prediction.getPointsAwarded()
-                            == CORRECT_OUTCOME_POINTS) {
-                        userScore.setCorrectOutcomes(
-                                Math.max(0,
-                                userScore.getCorrectOutcomes() - 1));
-                    }
+		for (Prediction prediction : predictions) {
+			if (prediction.getPointsAwarded() > 0) {
+				UserScore userScore = userScoreRepository
+						.findByUser(prediction.getUser())
+						.orElse(null);
 
-                    userScoreRepository.save(userScore);
-                }
+				if (userScore != null) {
+					userScore.setTotalPoints(
+							userScore.getTotalPoints()
+							- prediction.getPointsAwarded());
 
-                prediction.setPointsAwarded(0);
-                predictionRepository.save(prediction);
-            }
-        }
+					if (prediction.getPointsAwarded()
+							== EXACT_SCORE_POINTS) {
+						userScore.setCorrectScores(
+								Math.max(0,
+								userScore.getCorrectScores() - 1));
+						userScore.setCorrectOutcomes(
+								Math.max(0,
+								userScore.getCorrectOutcomes() - 1));
+					} else if (prediction.getPointsAwarded()
+							== CORRECT_OUTCOME_POINTS) {
+						userScore.setCorrectOutcomes(
+								Math.max(0,
+								userScore.getCorrectOutcomes() - 1));
+					}
 
-        // Reset scored flag
-        match.setScored(false);
-        matchRepository.save(match);
+					userScoreRepository.save(userScore);
+				}
 
-        // Rescore with new result
-        scoreMatch(match);
-    }
+				prediction.setPointsAwarded(0);
+				predictionRepository.save(prediction);
+			}
+		}
+	}
 
     private int calculatePoints(Prediction prediction, Match match) {
         int predictedHome = prediction.getHomeScore();
