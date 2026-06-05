@@ -17,16 +17,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @Controller
-public class MatchController {
+public class MatchController extends BaseController{
     
     private final MatchService matchService;
     private final PredictionService predictionService;
-    private final UserRepository userRepository;
 
     MatchController(MatchService matchService, PredictionService predictionService, UserRepository userRepository){
+        super(userRepository);
         this.matchService = matchService;
         this.predictionService = predictionService;
-        this.userRepository = userRepository;
     }
 
     @GetMapping("/matches")
@@ -84,10 +83,5 @@ public class MatchController {
         model.addAttribute("canViewOthers", predictionService.canViewOthers(match));
 
         return "matches/detail";
-    }
-
-    private User getUser(UserDetails userDetails) {
-        return userRepository.findByUsername(userDetails.getUsername())
-            .orElseThrow(() -> new IllegalStateException("Logged in user not found in database"));
     }
 }

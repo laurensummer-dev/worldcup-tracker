@@ -11,12 +11,9 @@ import java.util.Optional;
 @Repository
 public interface UserScoreRepository extends JpaRepository<UserScore, Long> {
 
-    // Find a specific user's score record
     Optional<UserScore> findByUser(User user);
 
-    // Find all scores ordered by points for leaderboard
     List<UserScore> findAllByOrderByTotalPointsDesc();
 
-    // Check if a score record exists for a user
     boolean existsByUser(User user);
 }

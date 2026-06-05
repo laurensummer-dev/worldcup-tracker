@@ -49,7 +49,6 @@ public class ScoringService {
 	public void rescoreMatch(Match match) {
 		reversePoints(match);
 
-		// Only rescore if match still has a valid result
 		if (match.getHomeScore() != null
 				&& match.getAwayScore() != null
 				&& match.getStatus().equals("COMPLETED")) {

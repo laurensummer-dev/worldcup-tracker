@@ -12,7 +12,6 @@
         <div class="card shadow-sm mb-4">
             <div class="card-body text-center">
 
-                <!-- Status badge -->
                 <span th:switch="${match.status}">
                     <span th:case="'SCHEDULED'"
                           class="badge bg-primary mb-2">Scheduled</span>
@@ -32,7 +31,6 @@
                     Date
                 </p>
 
-                <!-- Final score if completed -->
                 <div th:if="${match.status == 'COMPLETED'}"
                      class="display-4 fw-bold">
                     <span th:text="${match.homeScore}">0</span>
@@ -43,7 +41,6 @@
             </div>
         </div>
 
-        <!-- Success / error messages -->
         <div th:if="${param.success}"
              class="alert alert-success">
             Your prediction has been saved successfully!
@@ -57,14 +54,12 @@
             Invalid scores — please enter valid numbers.
         </div>
 
-        <!-- Prediction section -->
         <div class="card shadow-sm mb-4">
             <div class="card-header">
                 <h5 class="mb-0">Your Prediction</h5>
             </div>
             <div class="card-body">
 
-                <!-- Can edit — show form -->
                 <div th:if="${canEdit}">
                     <form method="post"
                           th:action="@{/matches/{id}/predict(id=${match.id})}">
@@ -118,7 +113,6 @@
                     </form>
                 </div>
 
-                <!-- Cannot edit — show read only prediction -->
                 <div th:unless="${canEdit}">
                     <div th:if="${userPrediction != null}">
                         <p class="text-muted mb-1">Your prediction:</p>
@@ -129,20 +123,19 @@
                             <span th:text="${userPrediction.awayScore}">0</span>
                             <span th:text="${match.awayTeam}">Away</span>
                         </p>
-                        <!-- Points awarded if match completed -->
                         <div th:if="${match.status == 'COMPLETED'}">
                             <span th:switch="${userPrediction.pointsAwarded}">
                                 <span th:case="3"
                                       class="badge bg-success fs-6">
-                                    🎯 Exact score — 3 points!
+                                    Exact score — 3 points!
                                 </span>
                                 <span th:case="1"
                                       class="badge bg-warning fs-6">
-                                    ✅ Correct outcome — 1 point
+                                    Correct outcome — 1 point
                                 </span>
                                 <span th:case="0"
                                       class="badge bg-danger fs-6">
-                                    ❌ Unlucky — 0 points
+                                    Unlucky — 0 points
                                 </span>
                             </span>
                         </div>
@@ -157,7 +150,6 @@
             </div>
         </div>
 
-        <!-- Other users' predictions -->
         <div class="card shadow-sm" th:if="${canViewOthers}">
             <div class="card-header">
                 <h5 class="mb-0">All Predictions</h5>
@@ -202,7 +194,6 @@
             </div>
         </div>
 
-        <!-- Lock message -->
         <div th:unless="${canViewOthers}"
              class="alert alert-info mt-3">
             Other predictions will be visible 1 hour before kick off.

@@ -12,14 +12,12 @@
 
         <div th:if="${!#lists.isEmpty(allMatches)}">
 
-            <!-- Tournament has started -->
             <div th:if="${matchService.hasTournamentStarted()}"
                  class="alert alert-warning mb-4">
                 Predictions are now locked — the tournament
                 has begun!
             </div>
 
-            <!-- Countdown — always show until tournament starts -->
             <div th:unless="${matchService.hasTournamentStarted()}"
                  th:classappend="${matchService.isLocked(allMatches[0])} ?
                      'alert-warning' : 'alert-info'"
@@ -57,13 +55,11 @@
 
         </div>
 
-        <!-- No fixtures yet -->
         <div th:if="${#lists.isEmpty(allMatches)}"
              class="alert alert-info">
             No matches scheduled yet — check back soon!
         </div>
 
-        <!-- Group selector buttons -->
         <div th:unless="${#lists.isEmpty(groups)}"
              class="mb-4">
             <h5 class="mb-3">Select a Group</h5>
@@ -83,7 +79,6 @@
             </div>
         </div>
 
-        <!-- Group modal -->
         <div class="modal fade"
              id="groupModal"
              tabindex="-1"
@@ -114,7 +109,6 @@
             </div>
         </div>
 
-        <!-- Countdown script -->
         <script th:if="${!#lists.isEmpty(allMatches)
                         and !matchService.hasTournamentStarted()}"
                 th:inline="javascript">

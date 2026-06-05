@@ -52,7 +52,6 @@ public class AdminController {
         return "redirect:/admin?success=created";
     }
 
-    // Show edit match form
     @GetMapping("/matches/{id}/edit")
     public String editMatchForm(@PathVariable Long id, Model model) {
         model.addAttribute("match", matchService.getMatchById(id));
@@ -62,7 +61,6 @@ public class AdminController {
         return "admin/matches/edit";
     }
 
-    // Handle single form submission for all match fields
     @PostMapping("/matches/{id}/edit")
     public String updateMatch(
             @PathVariable Long id,

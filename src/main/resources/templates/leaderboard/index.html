@@ -8,7 +8,6 @@
             <h1>Leaderboard</h1>
         </div>
 
-        <!-- User's current standing -->
         <div class="card shadow-sm mb-4 border-primary"
              th:if="${userScore != null}">
             <div class="card-body">
@@ -45,14 +44,12 @@
             </div>
         </div>
 
-        <!-- No predictions yet -->
         <div th:if="${userScore == null}"
              class="alert alert-info">
             You haven't made any predictions yet.
             <a href="/matches">Make your first prediction!</a>
         </div>
 
-        <!-- Leaderboard table -->
         <div class="card shadow-sm">
             <div class="card-header">
                 <h5 class="mb-0">Rankings</h5>
@@ -80,7 +77,6 @@
                             th:classappend="${score.user.username ==
                                 user.username} ? 'table-primary fw-bold'">
 
-                            <!-- Rank with medal for top 3 -->
                             <td>
                                 <span th:switch="${iter.index}">
                                     <span th:case="0">🥇</span>
@@ -112,7 +108,6 @@
             </div>
         </div>
 
-        <!-- HTMX auto refresh every 30 seconds -->
         <div hx-get="/leaderboard"
              hx-trigger="every 30s"
              hx-swap="none">

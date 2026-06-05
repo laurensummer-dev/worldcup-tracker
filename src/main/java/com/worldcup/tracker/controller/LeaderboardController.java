@@ -13,14 +13,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.util.List;
 
 @Controller
-public class LeaderboardController {
+public class LeaderboardController extends BaseController {
     
     private final LeaderboardService leaderboardService;
-    private final UserRepository userRepository;
 
     LeaderboardController(LeaderboardService leaderboardService, UserRepository userRepository){
+        super(userRepository);
         this.leaderboardService = leaderboardService;
-        this.userRepository = userRepository;
     }
 
     @GetMapping("/leaderboard")
@@ -38,12 +37,5 @@ public class LeaderboardController {
         model.addAttribute("user", user);
 
         return "/leaderboard/index";
-    }
-
-    private User getUser(UserDetails userDetails){
-        return userRepository.findByUsername(userDetails.getUsername())
-            .orElseThrow(() -> new IllegalStateException(
-                "Logged in user not found in database"
-            ));
     }
 }

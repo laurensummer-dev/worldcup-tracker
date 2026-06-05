@@ -8,7 +8,6 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    // Method names get read and generates queries automatically
     Optional<User> findByUsername(String username);
     boolean existsByUsername(String username);
 

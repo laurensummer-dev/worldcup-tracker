@@ -16,18 +16,17 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-public class PredictionController {
+public class PredictionController extends BaseController{
 
     private final PredictionService predictionService;
     private final MatchService matchService;
-    private final UserRepository userRepository;
 
     public PredictionController(PredictionService predictionService,
                                 MatchService matchService,
                                 UserRepository userRepository) {
+        super(userRepository);
         this.predictionService = predictionService;
         this.matchService = matchService;
-        this.userRepository = userRepository;
     }
 
     @PostMapping("/matches/{id}/predict")
@@ -65,11 +64,5 @@ public class PredictionController {
         } catch (IllegalArgumentException e) {
             return "redirect:/matches/" + id + "?error=invalid";
         }
-    }
-
-    private User getUser(UserDetails userDetails) {
-        return userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new IllegalStateException(
-                        "Logged in user not found in database"));
     }
 }

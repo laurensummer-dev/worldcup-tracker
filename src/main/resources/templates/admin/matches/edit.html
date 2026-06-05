@@ -19,13 +19,11 @@
                     </a>
                 </div>
 
-                <!-- Error message -->
                 <div th:if="${param.error}"
                      class="alert alert-danger">
                     Something went wrong — please try again.
                 </div>
 
-                <!-- Already scored info -->
                 <div th:if="${match.scored}"
                      class="alert alert-info mb-3">
                     ✓ This match has been scored. Updating the
@@ -33,7 +31,6 @@
                     all points.
                 </div>
 
-                <!-- Single edit form -->
                 <div class="card shadow-sm">
                     <div class="card-header">
                         <h5 class="mb-0">Edit Fixture</h5>
@@ -46,7 +43,6 @@
                                    th:name="${_csrf.parameterName}"
                                    th:value="${_csrf.token}"/>
 
-                            <!-- Group -->
                             <div class="mb-3">
                                 <label class="form-label">
                                     Group
@@ -64,7 +60,6 @@
                                 </select>
                             </div>
 
-                            <!-- Home team -->
                             <div class="mb-3">
                                 <label class="form-label">
                                     Home Team
@@ -77,7 +72,6 @@
                                        required/>
                             </div>
 
-                            <!-- Away team -->
                             <div class="mb-3">
                                 <label class="form-label">
                                     Away Team
@@ -90,7 +84,6 @@
                                        required/>
                             </div>
 
-                            <!-- Kick off time -->
                             <div class="mb-3">
                                 <label class="form-label">
                                     Kick Off Time
@@ -104,7 +97,6 @@
                                        required/>
                             </div>
 
-                            <!-- Status -->
                             <div class="mb-3">
                                 <label class="form-label">
                                     Status
@@ -131,14 +123,12 @@
                                 </select>
                             </div>
 
-                            <!-- Result — only shown when COMPLETED -->
                             <div id="resultSection"
                                  th:classappend="${match.status
                                      != 'COMPLETED'} ? 'd-none'">
                                 <hr/>
                                 <h6 class="mb-3">Result</h6>
 
-                                <!-- Current result with clear button -->
                                 <div th:if="${match.homeScore != null}"
                                      class="mb-3">
                                     <span class="text-muted small">
@@ -228,7 +218,6 @@
             </div>
         </div>
 
-        <!-- Scripts -->
         <script>
             function toggleResult() {
                 const status = document

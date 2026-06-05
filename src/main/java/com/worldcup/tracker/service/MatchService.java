@@ -41,11 +41,6 @@ public class MatchService {
                         "Match not found: " + id));
     }
 
-    public List<Match> getMatchesByStatus(String status) {
-        return matchRepository
-                .findByStatusOrderByKickOffTimeAsc(status);
-    }
-
     public List<Match> getMatchesByGroup(String groupName) {
         return matchRepository
                 .findByGroupNameOrderByKickOffTimeAsc(groupName);
@@ -164,7 +159,6 @@ public class MatchService {
                 && (!match.getHomeScore().equals(homeScore)
                     || !match.getAwayScore().equals(awayScore));
 
-        // Update basic fields
         match.setHomeTeam(homeTeam);
         match.setAwayTeam(awayTeam);
         match.setKickOffTime(kickOffTime);
@@ -177,15 +171,12 @@ public class MatchService {
             matchRepository.save(match);
 
             if (scoresChanged) {
-                // Result edited — rescore
                 scoringService.rescoreMatch(match);
             } else if (!match.getScored()) {
-                // First time scoring
                 scoringService.scoreMatch(match);
             }
 
         } else if (isNowCompleted && scoresCleared) {
-            // Scores cleared — reverse points and clear scores
             scoringService.rescoreMatch(match);
             match = getMatchById(id);
             match.setHomeScore(null);
@@ -195,7 +186,6 @@ public class MatchService {
 
         } else if (!isNowCompleted && wasCompleted
                 && match.getScored()) {
-            // Reverted from COMPLETED — reverse points
             scoringService.rescoreMatch(match);
             match = getMatchById(id);
             match.setStatus(status);
