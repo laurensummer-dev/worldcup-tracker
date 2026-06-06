@@ -53,6 +53,12 @@
                                    required/>
                         </div>
 
+                        <div th:if="${param.error == 'ratelimit'}"
+                            class="alert alert-danger">
+                            Too many login attempts — please wait a minute
+                            before trying again.
+                        </div>
+
                         <button type="submit"
                                 class="btn btn-primary w-100">
                             Log in
